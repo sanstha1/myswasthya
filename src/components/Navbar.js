@@ -2,19 +2,27 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { clearAuthState, getCurrentUser } from '../utils/auth';
 import { apiCall } from '../utils/api';
+import { useToast } from '../context/ToastContext';
+import ConfirmDialog from './ConfirmDialog';
 
 function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
+  const toast = useToast();
   const user = getCurrentUser();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
-  const handleLogout = async () => {
+  const performLogout = async () => {
+    setShowLogoutConfirm(false);
     setLoggingOut(true);
     try {
       // SECURITY: Server-side session invalidation (removes sessionId from DB)
       await apiCall('POST', '/auth/logout');
+      toast.success('Logged out successfully');
+    } catch {
+      toast.info('Logged out');
     } finally {
       // Clear client-side auth state regardless of server response
       clearAuthState();
@@ -35,9 +43,11 @@ function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
-              <span className="text-white text-sm font-bold">MS</span>
-            </div>
+            <img
+              src="/image/logo.png"
+              alt="MySwasthya logo"
+              className="w-8 h-8"
+            />
             <span className="text-lg font-bold text-primary-700">MySwasthya</span>
           </div>
 
@@ -64,7 +74,7 @@ function Navbar() {
               <p className="text-sm font-medium text-gray-700 truncate max-w-32">{user?.email || 'User'}</p>
             </div>
             <button
-              onClick={handleLogout}
+              onClick={() => setShowLogoutConfirm(true)}
               disabled={loggingOut}
               className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
             >
@@ -101,7 +111,10 @@ function Navbar() {
               </Link>
             ))}
             <button
-              onClick={handleLogout}
+              onClick={() => {
+                setMobileOpen(false);
+                setShowLogoutConfirm(true);
+              }}
               className="flex items-center gap-2 px-4 py-2 text-red-600 text-sm font-medium w-full"
             >
               🚪 Logout
@@ -109,6 +122,17 @@ function Navbar() {
           </div>
         )}
       </div>
+
+      <ConfirmDialog
+        open={showLogoutConfirm}
+        title="Log out?"
+        message="Are you sure you want to logout?"
+        confirmLabel="Logout"
+        cancelLabel="Cancel"
+        variant="danger"
+        onConfirm={performLogout}
+        onCancel={() => setShowLogoutConfirm(false)}
+      />
     </nav>
   );
 }
