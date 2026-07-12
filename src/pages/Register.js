@@ -11,7 +11,7 @@ const PASSWORD_REQUIREMENTS = [
   { label: 'Uppercase letter (A-Z)', test: (p) => /[A-Z]/.test(p) },
   { label: 'Lowercase letter (a-z)', test: (p) => /[a-z]/.test(p) },
   { label: 'Number (0-9)', test: (p) => /\d/.test(p) },
-  { label: 'Special character (!@#$...)', test: (p) => /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/.test(p) },
+  { label: 'Special character (!@#$...)', test: (p) => /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?`~]/.test(p) },
 ];
 
 function Register() {

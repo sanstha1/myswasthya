@@ -1,6 +1,7 @@
 import React from 'react';
 
 function StatsCard({ title, value, subtitle, icon, color = 'primary', onClick }) {
+  // eslint-disable-next-line no-unused-vars
   const colorClasses = {
     primary: 'bg-primary-50 text-primary-700 border-primary-200',
     secondary: 'bg-secondary-50 text-secondary-700 border-secondary-200',
