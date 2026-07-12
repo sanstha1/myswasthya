@@ -21,11 +21,22 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response interceptor (handle 401 globally)
+// Endpoints where a 401 is an *expected* possible response
+// (bad credentials, missing MFA code, etc.) - never redirect for these.
+const AUTH_ENDPOINTS = ['/auth/login', '/auth/register', '/auth/refresh'];
+
+// Response interceptor (handle 401 globally for protected routes only)
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    const isAuthEndpoint = AUTH_ENDPOINTS.some((path) =>
+      error.config?.url?.includes(path)
+    );
+    const alreadyOnPublicPage = ['/login', '/register', '/'].includes(
+      window.location.pathname
+    );
+
+    if (error.response?.status === 401 && !isAuthEndpoint && !alreadyOnPublicPage) {
       clearAuthState();
       window.location.href = '/login';
     }

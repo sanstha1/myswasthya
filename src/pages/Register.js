@@ -92,9 +92,11 @@ function Register() {
       <div className="min-h-screen bg-gradient-to-br from-primary-50 to-green-100 flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-8">
           <div className="text-center mb-6">
-            <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-3xl">🔐</span>
-            </div>
+            <img
+              src="/image/logo_no_background.png"
+              alt="MySwasthya logo"
+              className="w-16 h-16 mx-auto mb-4"
+            />
             <h2 className="text-2xl font-bold text-gray-900">Setup Authenticator</h2>
             <p className="text-gray-500 text-sm mt-2">
               Scan this QR code with Google Authenticator, Authy, or any TOTP app
@@ -138,9 +140,11 @@ function Register() {
     <div className="min-h-screen bg-gradient-to-br from-primary-50 to-green-100 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-8">
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-primary-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <span className="text-white text-2xl font-bold">MS</span>
-          </div>
+          <img
+            src="/image/logo.png"
+            alt="MySwasthya logo"
+            className="w-16 h-16 mx-auto mb-4"
+          />
           <h1 className="text-2xl font-bold text-gray-900">Create Account</h1>
           <p className="text-gray-500 text-sm mt-1">MySwasthya - Secure Health Records</p>
         </div>
