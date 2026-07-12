@@ -4,7 +4,7 @@ import { clearAuthState } from './auth';
 // SECURITY: Base URL from env variable (not hardcoded)
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
 
-// Axios instance
+
 const api = axios.create({
   baseURL: API_URL,
   timeout: 30000,
@@ -47,7 +47,17 @@ api.interceptors.response.use(
 // Wrapper for API calls
 async function apiCall(method, url, data = null, config = {}) {
   try {
-    const response = await api({ method, url, data, ...config });
+    const requestConfig = { method, url, ...config };
+
+    // SECURITY: Only attach a request body if data was actually provided.
+    // Sending a literal `null` body with Content-Type: application/json
+    // fails body-parser's strict JSON check ("null" is not a JSON object/array),
+    // which breaks any no-payload POST (e.g. /auth/enable-mfa, /auth/logout).
+    if (data !== null && data !== undefined) {
+      requestConfig.data = data;
+    }
+
+    const response = await api(requestConfig);
     return { success: true, data: response.data };
   } catch (error) {
     const message = error.response?.data?.message || error.message || 'An error occurred';
