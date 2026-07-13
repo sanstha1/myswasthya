@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { apiCall } from '../utils/api';
 import { setAuthState } from '../utils/auth';
+import { useToast } from '../context/ToastContext';
 import ErrorMessage from '../components/ErrorMessage';
 import LoadingSpinner from '../components/LoadingSpinner';
 
 function Login() {
   const navigate = useNavigate();
+  const toast = useToast();
 
   const [form, setForm] = useState({
     email: '',
@@ -62,11 +64,13 @@ function Login() {
         const userData = result.data.data;
 
         if (userData.passwordExpired) {
+          toast.info('Your password has expired. Please set a new one.');
           navigate('/settings?tab=password&expired=true');
           return;
         }
 
         setAuthState(userData);
+        toast.success('Logged in successfully');
         navigate('/dashboard');
       } else {
         const data = result.data;
@@ -74,11 +78,13 @@ function Login() {
         if (result.status === 423) {
           setLocked(true);
           setError(result.message);
+          toast.error(result.message);
         } else if (data?.requiresMFA) {
           setShowMFA(true);
           setError('Please enter your 6-digit MFA code');
         } else {
           setError(result.message);
+          toast.error(result.message);
 
           if (data?.failedAttempts) {
             setFailedAttempts(data.failedAttempts);
@@ -268,7 +274,7 @@ function Login() {
               </div>
 
               {/* SECURITY: OAuth authentication handled by Google */}
-              <a
+              <a              
                 href="http://localhost:3000/api/auth/google"
                 rel="noopener noreferrer"
                 className="w-full flex items-center justify-center gap-3 py-2.5 px-4 border border-gray-300 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"

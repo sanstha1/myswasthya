@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { apiCall } from '../utils/api';
 import PasswordStrengthMeter from '../components/PasswordStrengthMeter';
+import { useToast } from '../context/ToastContext';
 import ErrorMessage from '../components/ErrorMessage';
 import LoadingSpinner from '../components/LoadingSpinner';
 
@@ -16,6 +17,7 @@ const PASSWORD_REQUIREMENTS = [
 
 function Register() {
   const navigate = useNavigate();
+  const toast = useToast();
   const [form, setForm] = useState({ email: '', password: '', confirmPassword: '', fullName: '' });
   const [errors, setErrors] = useState([]);
   const [generalError, setGeneralError] = useState('');
@@ -77,8 +79,10 @@ function Register() {
         setQrCode(result.data.data.qrCode);
         setTotpSecret(result.data.data.totpSecret);
         setRegisteredEmail(form.email);
+        toast.success('Account created successfully');
       } else {
         setGeneralError(result.message);
+        toast.error(result.message);
         if (result.data?.errors) setErrors(result.data.errors);
       }
     } finally {

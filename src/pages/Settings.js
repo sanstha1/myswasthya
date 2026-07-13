@@ -4,11 +4,14 @@ import Navbar from '../components/Navbar';
 import PasswordStrengthMeter from '../components/PasswordStrengthMeter';
 import ErrorMessage from '../components/ErrorMessage';
 import LoadingSpinner from '../components/LoadingSpinner';
+import ConfirmDialog from '../components/ConfirmDialog';
+import { useToast } from '../context/ToastContext';
 import { apiCall } from '../utils/api';
 import { clearAuthState } from '../utils/auth';
 
 function Settings() {
   const navigate = useNavigate();
+  const toast = useToast();
 
   const [activeTab, setActiveTab] = useState('password');
 
@@ -33,6 +36,7 @@ function Settings() {
   const [sessions, setSessions] = useState([]);
   const [sessionsLoading, setSessionsLoading] = useState(false);
   const [sessionError, setSessionError] = useState('');
+  const [logoutOthersConfirm, setLogoutOthersConfirm] = useState(false);
 
   
   const [deleteModal, setDeleteModal] = useState(false);
@@ -93,10 +97,12 @@ function Settings() {
 
       if (result.success) {
         // SECURITY: Server invalidates all sessions after password change
+        toast.success('Password changed successfully. Please log in again.');
         clearAuthState();
         navigate('/login?message=password-changed');
       } else {
         setPwError(result.message);
+        toast.error(result.message);
       }
     } finally {
       setPwLoading(false);
@@ -118,6 +124,7 @@ function Settings() {
         setShowMfaSetup(true);
       } else {
         setMfaError(result.message);
+        toast.error(result.message);
       }
     } finally {
       setMfaLoading(false);
@@ -140,8 +147,10 @@ function Settings() {
         setMfaStatus((prev) => ({ ...prev, isMFAEnabled: true }));
         setShowMfaSetup(false);
         setMfaVerifyCode('');
+        toast.success('MFA enabled successfully');
       } else {
         setMfaError(result.message);
+        toast.error(result.message);
       }
     } finally {
       setMfaLoading(false);
@@ -163,8 +172,10 @@ function Settings() {
         setMfaSuccess('MFA disabled');
         setMfaStatus((prev) => ({ ...prev, isMFAEnabled: false }));
         setMfaDisablePassword('');
+        toast.success('MFA disabled');
       } else {
         setMfaError(result.message);
+        toast.error(result.message);
       }
     } finally {
       setMfaLoading(false);
@@ -173,17 +184,20 @@ function Settings() {
 
   // SECURITY: Logout from all other sessions
   const handleLogoutOtherSessions = async () => {
+    setLogoutOthersConfirm(false);
     try {
       const result = await apiCall('DELETE', '/auth/sessions/others');
       if (result.success) {
         loadSessions();
         setSessionError('');
-        alert('All other sessions logged out successfully');
+        toast.success('All other sessions logged out successfully');
       } else {
         setSessionError(result.message);
+        toast.error(result.message);
       }
     } catch {
       setSessionError('Failed to logout other sessions');
+      toast.error('Failed to logout other sessions');
     }
   };
 
@@ -465,7 +479,7 @@ function Settings() {
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-base font-semibold text-gray-800">Active Sessions</h2>
               <button
-                onClick={handleLogoutOtherSessions}
+                onClick={() => setLogoutOthersConfirm(true)}
                 className="text-xs text-red-600 hover:underline"
               >
                 Logout All Others
@@ -541,6 +555,9 @@ function Settings() {
                         document.body.appendChild(a);
                         a.click();
                         window.URL.revokeObjectURL(url);
+                        toast.success('Data exported successfully');
+                      } else {
+                        toast.error('Export failed');
                       }
                     }}
                     className="px-4 py-2 bg-secondary-600 hover:bg-secondary-700 text-white rounded-lg text-sm font-medium"
@@ -603,7 +620,7 @@ function Settings() {
                 disabled={deleteConfirm !== 'DELETE'}
                 className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium disabled:opacity-50"
                 onClick={() => {
-                  alert('Account deletion would be implemented here. Contact support for now.');
+                  toast.info('Account deletion would be implemented here. Contact support for now.');
                   setDeleteModal(false);
                 }}
               >
@@ -613,6 +630,17 @@ function Settings() {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={logoutOthersConfirm}
+        title="Log out other sessions?"
+        message="This will sign you out of all devices except this one."
+        confirmLabel="Logout Others"
+        cancelLabel="Cancel"
+        variant="danger"
+        onConfirm={handleLogoutOtherSessions}
+        onCancel={() => setLogoutOthersConfirm(false)}
+      />
     </div>
   );
 }

@@ -5,11 +5,13 @@ import StatsCard from '../components/StatsCard';
 import MedicalRecordList from '../components/MedicalRecordList';
 import ErrorMessage from '../components/ErrorMessage';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { useToast } from '../context/ToastContext';
 import { apiCall } from '../utils/api';
 import { getCurrentUser } from '../utils/auth';
 
 function Dashboard() {
   const navigate = useNavigate();
+  const toast = useToast();
   const user = getCurrentUser();
 
   const [profile, setProfile] = useState(null);
@@ -31,8 +33,10 @@ function Dashboard() {
 
   useEffect(() => {
   loadDashboardData();
-  }, []);
+  // eslint-disable-next-line no-use-before-define
+  }, [loadDashboardData]);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const loadDashboardData = async () => {
     setLoading(true);
     setError('');
@@ -48,6 +52,7 @@ function Dashboard() {
       if (txRes.success) setTransactions(txRes.data.data || []);
     } catch {
       setError('Failed to load dashboard data');
+      toast.error('Failed to load dashboard data');
     } finally {
       setLoading(false);
     }
@@ -88,11 +93,14 @@ function Dashboard() {
         setUploadModal(false);
         setUploadForm({ title: '', recordType: 'lab_report', description: '', doctorName: '', recordDate: '' });
         setUploadFile(null);
+        toast.success('Medical record uploaded successfully');
       } else {
         setUploadError(data.message || 'Upload failed');
+        toast.error(data.message || 'Upload failed');
       }
     } catch {
       setUploadError('Upload failed');
+      toast.error('Upload failed');
     } finally {
       setUploading(false);
     }
@@ -121,6 +129,7 @@ function Dashboard() {
 
   const handleDeleteRecord = (deletedId) => {
     setRecords((prev) => prev.filter((r) => r._id !== deletedId));
+    toast.success('Record deleted successfully');
   };
 
   if (loading) {

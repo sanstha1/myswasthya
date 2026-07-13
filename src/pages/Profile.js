@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import ErrorMessage from '../components/ErrorMessage';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { useToast } from '../context/ToastContext';
 import { apiCall } from '../utils/api';
 
 const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', 'Unknown'];
@@ -11,6 +12,7 @@ const NEPAL_PROVINCES = [
 ];
 
 function Profile() {
+  const toast = useToast();
   // eslint-disable-next-line no-unused-vars
   const [profile, setProfile] = useState(null);
   const [form, setForm] = useState({
@@ -28,8 +30,10 @@ function Profile() {
 
   useEffect(() => {
     loadProfile();
-  }, []);
+  // eslint-disable-next-line no-use-before-define
+  }, [loadProfile]);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const loadProfile = async () => {
     setLoading(true);
     try {
@@ -60,6 +64,7 @@ function Profile() {
       }
     } catch {
       setError('Failed to load profile');
+      toast.error('Failed to load profile');
     } finally {
       setLoading(false);
     }
@@ -95,9 +100,11 @@ function Profile() {
       if (result.success) {
         setSuccess('Profile updated successfully!');
         setProfile(result.data.data);
+        toast.success('Profile updated successfully');
         setTimeout(() => setSuccess(''), 3000);
       } else {
         setError(result.message);
+        toast.error(result.message);
       }
     } finally {
       setSaving(false);
@@ -121,8 +128,10 @@ function Profile() {
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
+      toast.success('Data exported successfully');
     } catch {
       setError('Export failed');
+      toast.error('Export failed');
     } finally {
       setExporting(false);
     }
