@@ -6,7 +6,7 @@ import MedicalRecordList from '../components/MedicalRecordList';
 import ErrorMessage from '../components/ErrorMessage';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { apiCall } from '../utils/api';
-import { getCurrentUser, getAuthState, setAuthState } from '../utils/auth';
+import { getCurrentUser } from '../utils/auth';
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -30,23 +30,8 @@ function Dashboard() {
   const [uploadError, setUploadError] = useState('');
 
   useEffect(() => {
-    const initDashboard = async () => {
-      // SECURITY: OAuth users land here with httpOnly cookie but no local auth state
-      // Call /auth/me to verify cookie and populate local state
-      const state = getAuthState();
-      if (!state) {
-        const result = await apiCall('GET', '/auth/me');
-        if (result.success) {
-          setAuthState(result.data.data);
-        } else {
-          navigate('/login');
-          return;
-        }
-      }
-      loadDashboardData();
-    };
-    initDashboard();
-  }, [navigate]);
+  loadDashboardData();
+  }, []);
 
   const loadDashboardData = async () => {
     setLoading(true);
