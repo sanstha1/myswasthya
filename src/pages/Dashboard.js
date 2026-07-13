@@ -16,6 +16,7 @@ function Dashboard() {
 
   const [profile, setProfile] = useState(null);
   const [records, setRecords] = useState([]);
+  // eslint-disable-next-line no-unused-vars
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -143,9 +144,6 @@ function Dashboard() {
     );
   }
 
-  const completedTx = transactions.filter((t) => t.status === 'completed');
-  const totalSpent = completedTx.reduce((sum, t) => sum + t.amount, 0);
-
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
@@ -168,13 +166,14 @@ function Dashboard() {
 
         <ErrorMessage message={error} onDismiss={() => setError('')} />
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
           <StatsCard
             title="Blood Group"
             value={profile?.bloodGroup || '—'}
             subtitle="Blood type on file"
             icon="🩸"
             color="red"
+            size="lg"
           />
           <StatsCard
             title="Medical Records"
@@ -182,26 +181,10 @@ function Dashboard() {
             subtitle="Files uploaded"
             icon="📋"
             color="primary"
+            size="lg"
             onClick={() =>
               document.getElementById('records-section')?.scrollIntoView({ behavior: 'smooth' })
             }
-          />
-          <StatsCard
-            title="Transactions"
-            value={transactions.length}
-            subtitle="Total payments"
-            icon="💳"
-            color="secondary"
-            onClick={() =>
-              document.getElementById('tx-section')?.scrollIntoView({ behavior: 'smooth' })
-            }
-          />
-          <StatsCard
-            title="Total Spent"
-            value={`NPR ${totalSpent.toLocaleString()}`}
-            subtitle="All time payments"
-            icon="💰"
-            color="yellow"
           />
         </div>
 
