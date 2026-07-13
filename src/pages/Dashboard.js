@@ -3,11 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import StatsCard from '../components/StatsCard';
 import MedicalRecordList from '../components/MedicalRecordList';
-// import TransactionList from '../components/TransactionList';
 import ErrorMessage from '../components/ErrorMessage';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { apiCall } from '../utils/api';
-import { getCurrentUser } from '../utils/auth';
+import { getCurrentUser, getAuthState, setAuthState } from '../utils/auth';
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -31,8 +30,23 @@ function Dashboard() {
   const [uploadError, setUploadError] = useState('');
 
   useEffect(() => {
-    loadDashboardData();
-  }, []);
+    const initDashboard = async () => {
+      // SECURITY: OAuth users land here with httpOnly cookie but no local auth state
+      // Call /auth/me to verify cookie and populate local state
+      const state = getAuthState();
+      if (!state) {
+        const result = await apiCall('GET', '/auth/me');
+        if (result.success) {
+          setAuthState(result.data.data);
+        } else {
+          navigate('/login');
+          return;
+        }
+      }
+      loadDashboardData();
+    };
+    initDashboard();
+  }, [navigate]);
 
   const loadDashboardData = async () => {
     setLoading(true);
@@ -77,7 +91,7 @@ function Dashboard() {
         `${process.env.REACT_APP_API_URL || 'http://localhost:3000/api'}/records/upload`,
         {
           method: 'POST',
-          credentials: 'include',  // SECURITY: Send httpOnly cookie
+          credentials: 'include',
           body: formData,
         }
       );
@@ -103,7 +117,7 @@ function Dashboard() {
     const file = e.target.files[0];
     if (!file) return;
 
-    // SECURITY: Client-side file validation (secondary to server-side)
+    // SECURITY: Client-side file validation (secondary to server-side checks)
     const allowed = ['application/pdf', 'image/png', 'image/jpeg'];
     if (!allowed.includes(file.type)) {
       setUploadError('Only PDF, PNG, and JPEG files are allowed');
@@ -143,19 +157,23 @@ function Dashboard() {
       <Navbar />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Welcome Header */}
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900">
             Welcome back, {profile?.fullName || user?.email?.split('@')[0] || 'User'} 👋
           </h1>
           <p className="text-gray-500 text-sm mt-1">
-            Your health records dashboard · {new Date().toLocaleDateString('en-NP', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+            Your health records dashboard ·{' '}
+            {new Date().toLocaleDateString('en-NP', {
+              weekday: 'long',
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+            })}
           </p>
         </div>
 
         <ErrorMessage message={error} onDismiss={() => setError('')} />
 
-        {/* Stats Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <StatsCard
             title="Blood Group"
@@ -170,7 +188,9 @@ function Dashboard() {
             subtitle="Files uploaded"
             icon="📋"
             color="primary"
-            onClick={() => document.getElementById('records-section')?.scrollIntoView({ behavior: 'smooth' })}
+            onClick={() =>
+              document.getElementById('records-section')?.scrollIntoView({ behavior: 'smooth' })
+            }
           />
           <StatsCard
             title="Transactions"
@@ -178,7 +198,9 @@ function Dashboard() {
             subtitle="Total payments"
             icon="💳"
             color="secondary"
-            onClick={() => document.getElementById('tx-section')?.scrollIntoView({ behavior: 'smooth' })}
+            onClick={() =>
+              document.getElementById('tx-section')?.scrollIntoView({ behavior: 'smooth' })
+            }
           />
           <StatsCard
             title="Total Spent"
@@ -189,7 +211,6 @@ function Dashboard() {
           />
         </div>
 
-        
         <div className="bg-white rounded-xl border border-gray-200 p-5 mb-8">
           <h2 className="text-base font-semibold text-gray-800 mb-4">Quick Actions</h2>
           <div className="flex flex-wrap gap-3">
@@ -214,9 +235,7 @@ function Dashboard() {
           </div>
         </div>
 
-       
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Medical Records */}
           <div id="records-section" className="bg-white rounded-xl border border-gray-200 p-5">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-base font-semibold text-gray-800">Medical Records</h2>
@@ -234,7 +253,6 @@ function Dashboard() {
             />
           </div>
 
-         
           <div className="bg-white rounded-xl border border-gray-200 p-5">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-base font-semibold text-gray-800">Health Summary</h2>
@@ -301,19 +319,9 @@ function Dashboard() {
               </div>
             )}
           </div>
-
-          
-          {/* <div id="tx-section" className="bg-white rounded-xl border border-gray-200 p-5 lg:col-span-2">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-base font-semibold text-gray-800">Recent Transactions</h2>
-              <span className="text-xs text-gray-400">{transactions.length} total</span>
-            </div>
-            <TransactionList transactions={transactions.slice(0, 5)} />
-          </div> */}
         </div>
       </main>
 
-    
       {uploadModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
@@ -374,7 +382,6 @@ function Dashboard() {
                   required
                   className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
                 />
-                {/* SECURITY: File restrictions displayed to user */}
                 <p className="text-xs text-gray-400 mt-1">PDF, PNG, JPEG only · Max 10MB</p>
                 {uploadFile && (
                   <p className="text-xs text-green-600 mt-1">
@@ -419,7 +426,11 @@ function Dashboard() {
                   disabled={uploading}
                   className="flex-1 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-lg text-sm font-medium disabled:opacity-50 flex items-center justify-center gap-2"
                 >
-                  {uploading ? <><LoadingSpinner size="sm" color="white" /> Uploading...</> : '📤 Upload'}
+                  {uploading ? (
+                    <><LoadingSpinner size="sm" color="white" /> Uploading...</>
+                  ) : (
+                    '📤 Upload'
+                  )}
                 </button>
               </div>
             </form>
