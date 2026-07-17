@@ -202,10 +202,10 @@ function Settings() {
   };
 
   const tabs = [
-    { id: 'password', label: '🔑 Password', icon: '🔑' },
-    { id: 'mfa', label: '🔐 MFA', icon: '🔐' },
-    { id: 'sessions', label: '📱 Sessions', icon: '📱' },
-    { id: 'privacy', label: '🛡 Privacy', icon: '🛡' },
+    { id: 'password', label: 'Password', icon: '🔑' },
+    { id: 'mfa', label: 'MFA', icon: '🔐' },
+    { id: 'sessions', label: 'Sessions', icon: '📱' },
+    { id: 'privacy', label: 'Privacy', icon: '🛡' },
   ];
 
   return (

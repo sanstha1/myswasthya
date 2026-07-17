@@ -195,19 +195,19 @@ function Dashboard() {
               onClick={() => setUploadModal(true)}
               className="flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg text-sm font-medium transition-colors"
             >
-              📤 Upload Record
+              Upload Record
             </button>
             <button
               onClick={() => navigate('/profile')}
               className="flex items-center gap-2 px-4 py-2 bg-secondary-600 hover:bg-secondary-700 text-white rounded-lg text-sm font-medium transition-colors"
             >
-              👤 Update Profile
+              Update Profile
             </button>
             <button
               onClick={() => navigate('/settings')}
               className="flex items-center gap-2 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg text-sm font-medium transition-colors"
             >
-              ⚙️ Settings
+              Settings
             </button>
           </div>
         </div>
