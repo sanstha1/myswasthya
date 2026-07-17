@@ -31,9 +31,9 @@ function Navbar() {
   };
 
   const navLinks = [
-    { path: '/dashboard', label: 'Dashboard', icon: '🏠' },
-    { path: '/profile', label: 'Profile', icon: '👤' },
-    { path: '/settings', label: 'Settings', icon: '⚙️' },
+    { path: '/dashboard', label: 'Dashboard' },
+    { path: '/profile', label: 'Profile' },
+    { path: '/settings', label: 'Settings' },
   ];
 
   const isActive = (path) => location.pathname === path;
@@ -62,7 +62,6 @@ function Navbar() {
                     : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                 }`}
               >
-                <span>{link.icon}</span>
                 {link.label}
               </Link>
             ))}
@@ -78,7 +77,7 @@ function Navbar() {
               disabled={loggingOut}
               className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
             >
-              {loggingOut ? '...' : '🚪 Logout'}
+              {loggingOut ? '...' : 'Logout'}
             </button>
           </div>
 
@@ -107,7 +106,7 @@ function Navbar() {
                   isActive(link.path) ? 'bg-primary-50 text-primary-700' : 'text-gray-600'
                 }`}
               >
-                {link.icon} {link.label}
+                {link.label}
               </Link>
             ))}
             <button
@@ -117,7 +116,7 @@ function Navbar() {
               }}
               className="flex items-center gap-2 px-4 py-2 text-red-600 text-sm font-medium w-full"
             >
-              🚪 Logout
+              Logout
             </button>
           </div>
         )}
