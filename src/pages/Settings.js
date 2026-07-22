@@ -41,6 +41,9 @@ function Settings() {
   
   const [deleteModal, setDeleteModal] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState('');
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deleteError, setDeleteError] = useState('');
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   useEffect(() => {
     loadMFAStatus();
@@ -201,6 +204,33 @@ function Settings() {
     }
   };
 
+  // SECURITY: Delete account requires password re-authentication
+  const handleDeleteAccount = async () => {
+    if (!deletePassword) {
+      setDeleteError('Password is required to delete account');
+      return;
+    }
+
+    setDeleteLoading(true);
+    setDeleteError('');
+    try {
+      const result = await apiCall('DELETE', '/auth/delete-account', { password: deletePassword });
+      if (result.success) {
+        toast.success('Account deleted successfully');
+        clearAuthState();
+        navigate('/login?message=account-deleted');
+      } else {
+        setDeleteError(result.message);
+        toast.error(result.message);
+      }
+    } catch {
+      setDeleteError('Account deletion failed');
+      toast.error('Account deletion failed');
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
   const tabs = [
     { id: 'password', label: 'Password', icon: '🔑' },
     { id: 'mfa', label: 'MFA', icon: '🔐' },
@@ -263,7 +293,17 @@ function Settings() {
                   />
                   <button type="button" onClick={() => setShowPw((p) => ({ ...p, current: !p.current }))}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
-                    {showPw.current ? '🙈' : '👁'}
+                    {showPw.current ? (
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                        <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
+                      </svg>
+                    ) : (
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M3.707 2.293a1 1 0 00-1.414 1.414l14 14a1 1 0 001.414-1.414l-1.473-1.473A10.014 10.014 0 0019.542 10C18.268 5.943 14.478 3 10 3a9.958 9.958 0 00-4.512 1.074l-1.78-1.78zm4.261 4.26l1.514 1.515a2.003 2.003 0 012.45 2.45l1.514 1.514a4 4 0 00-5.478-5.478z" clipRule="evenodd" />
+                        <path d="M12.454 16.697L9.75 13.992a4 4 0 01-3.742-3.741L2.335 6.578A9.98 9.98 0 00.458 10c1.274 4.057 5.065 7 9.542 7 .847 0 1.669-.105 2.454-.303z" />
+                      </svg>
+                    )}
                   </button>
                 </div>
               </div>
@@ -284,7 +324,17 @@ function Settings() {
                   />
                   <button type="button" onClick={() => setShowPw((p) => ({ ...p, new: !p.new }))}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
-                    {showPw.new ? '🙈' : '👁'}
+                    {showPw.new ? (
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                        <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
+                      </svg>
+                    ) : (
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M3.707 2.293a1 1 0 00-1.414 1.414l14 14a1 1 0 001.414-1.414l-1.473-1.473A10.014 10.014 0 0019.542 10C18.268 5.943 14.478 3 10 3a9.958 9.958 0 00-4.512 1.074l-1.78-1.78zm4.261 4.26l1.514 1.515a2.003 2.003 0 012.45 2.45l1.514 1.514a4 4 0 00-5.478-5.478z" clipRule="evenodd" />
+                        <path d="M12.454 16.697L9.75 13.992a4 4 0 01-3.742-3.741L2.335 6.578A9.98 9.98 0 00.458 10c1.274 4.057 5.065 7 9.542 7 .847 0 1.669-.105 2.454-.303z" />
+                      </svg>
+                    )}
                   </button>
                 </div>
                 {/* SECURITY: Real-time password strength for new password */}
@@ -310,7 +360,17 @@ function Settings() {
                   />
                   <button type="button" onClick={() => setShowPw((p) => ({ ...p, confirm: !p.confirm }))}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
-                    {showPw.confirm ? '🙈' : '👁'}
+                    {showPw.confirm ? (
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                        <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
+                      </svg>
+                    ) : (
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M3.707 2.293a1 1 0 00-1.414 1.414l14 14a1 1 0 001.414-1.414l-1.473-1.473A10.014 10.014 0 0019.542 10C18.268 5.943 14.478 3 10 3a9.958 9.958 0 00-4.512 1.074l-1.78-1.78zm4.261 4.26l1.514 1.515a2.003 2.003 0 012.45 2.45l1.514 1.514a4 4 0 00-5.478-5.478z" clipRule="evenodd" />
+                        <path d="M12.454 16.697L9.75 13.992a4 4 0 01-3.742-3.741L2.335 6.578A9.98 9.98 0 00.458 10c1.274 4.057 5.065 7 9.542 7 .847 0 1.669-.105 2.454-.303z" />
+                      </svg>
+                    )}
                   </button>
                 </div>
               </div>
@@ -596,6 +656,8 @@ function Settings() {
               </p>
             </div>
 
+            <ErrorMessage message={deleteError} onDismiss={() => setDeleteError('')} />
+
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-1.5">
                 Type <span className="font-mono text-red-600">DELETE</span> to confirm
@@ -609,22 +671,38 @@ function Settings() {
               />
             </div>
 
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Enter your password
+              </label>
+              <input
+                type="password"
+                value={deletePassword}
+                onChange={(e) => setDeletePassword(e.target.value)}
+                placeholder="Your current password"
+                maxLength={128}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+              />
+            </div>
+
             <div className="flex gap-3">
               <button
-                onClick={() => { setDeleteModal(false); setDeleteConfirm(''); }}
+                onClick={() => {
+                  setDeleteModal(false);
+                  setDeleteConfirm('');
+                  setDeletePassword('');
+                  setDeleteError('');
+                }}
                 className="flex-1 py-2.5 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium"
               >
                 Cancel
               </button>
               <button
-                disabled={deleteConfirm !== 'DELETE'}
-                className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium disabled:opacity-50"
-                onClick={() => {
-                  toast.info('Account deletion would be implemented here. Contact support for now.');
-                  setDeleteModal(false);
-                }}
+                disabled={deleteConfirm !== 'DELETE' || !deletePassword || deleteLoading}
+                className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium disabled:opacity-50 flex items-center justify-center gap-2"
+                onClick={handleDeleteAccount}
               >
-                Delete Account
+                {deleteLoading ? <LoadingSpinner size="sm" color="white" /> : 'Delete Account'}
               </button>
             </div>
           </div>

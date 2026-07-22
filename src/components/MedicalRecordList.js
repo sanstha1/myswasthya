@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { apiCall } from '../utils/api';
 import LoadingSpinner from './LoadingSpinner';
+import ConfirmDialog from './ConfirmDialog';
 
 const RECORD_TYPE_LABELS = {
   lab_report: '🧪 Lab Report',
@@ -14,6 +15,7 @@ const RECORD_TYPE_LABELS = {
 function MedicalRecordList({ records, onDelete, onUpload }) {
   const [downloading, setDownloading] = useState(null);
   const [deleting, setDeleting] = useState(null);
+  const [confirmRecord, setConfirmRecord] = useState(null);
 
   const handleDownload = async (record) => {
     setDownloading(record._id);
@@ -46,8 +48,14 @@ function MedicalRecordList({ records, onDelete, onUpload }) {
     }
   };
 
-  const handleDelete = async (record) => {
-    if (!window.confirm(`Delete "${record.title}"? This cannot be undone.`)) return;
+  const handleDeleteClick = (record) => {
+    setConfirmRecord(record);
+  };
+
+  const handleConfirmDelete = async () => {
+    const record = confirmRecord;
+    setConfirmRecord(null);
+    if (!record) return;
 
     setDeleting(record._id);
     try {
@@ -107,7 +115,7 @@ function MedicalRecordList({ records, onDelete, onUpload }) {
               )}
             </button>
             <button
-              onClick={() => handleDelete(record)}
+              onClick={() => handleDeleteClick(record)}
               disabled={deleting === record._id}
               className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg disabled:opacity-50 transition-colors"
             >
@@ -116,6 +124,17 @@ function MedicalRecordList({ records, onDelete, onUpload }) {
           </div>
         </div>
       ))}
+
+      <ConfirmDialog
+        open={!!confirmRecord}
+        title="Delete Record"
+        message={confirmRecord ? `Delete "${confirmRecord.title}"? This cannot be undone.` : ''}
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        variant="danger"
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setConfirmRecord(null)}
+      />
     </div>
   );
 }
